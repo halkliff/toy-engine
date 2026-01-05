@@ -10,3 +10,6 @@ pub mod vec4;
 pub use vec2::*;
 pub use vec3::*;
 pub use vec4::*;
+
+/// Precision threshold for determining if a vector is normalized.
+pub const NORMALIZED_PRECISION_THRESHOLD: f32 = 2e-4;

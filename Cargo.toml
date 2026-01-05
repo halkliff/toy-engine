@@ -2,7 +2,7 @@
 resolver = "3"
 members = ["core"]
 [workspace.package]
-authors = ["Werberth Lins <werberth.lins@gmail.com>"]
+authors = ["Werberth Lins <halkliff@pm.me>"]
 edition = "2024"
 version = "0.1.0"
 description = "A toy Graphics and Game Engine"

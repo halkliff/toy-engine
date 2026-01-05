@@ -1,4 +1,4 @@
-use super::{Vec2, Vec4};
+use super::{Vec2, Vec4, NORMALIZED_PRECISION_THRESHOLD};
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign};
 
 /// A 3-dimensional vector with x, y, and z components.
@@ -329,10 +329,20 @@ impl Vec3 {
     pub fn normalize(&mut self) {
         let length = self.length();
         if length > 0.0 {
-            self.x /= length;
-            self.y /= length;
-            self.z /= length;
+            *self /= length;
         }
+    }
+
+    /// Checks if the vector is normalized (unit length).
+    /// Uses precision threshold of 2e-4 to account for floating-point errors.
+    /// # Examples
+    /// ```rust
+    /// # use toyengine::primitives::vec::{Vec3, NORMALIZED_PRECISION_THRESHOLD};
+    /// let v = Vec3::new(1.0, 0.0, 0.0);
+    /// assert!(v.is_normalized());
+    /// ```
+    pub fn is_normalized(&self) -> bool {
+        (self.length_squared() - 1.0).abs() < NORMALIZED_PRECISION_THRESHOLD
     }
 
     /// Computes the distance between two points represented as vectors.

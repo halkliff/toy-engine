@@ -1,4 +1,4 @@
-use super::{Vec3, Vec2};
+use super::{Vec3, Vec2, NORMALIZED_PRECISION_THRESHOLD};
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign};
 
 /// A 4-dimensional vector with x, y, z, and w components.
@@ -22,7 +22,7 @@ use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssi
 /// # Examples
 ///
 /// ```rust
-/// use toyengine::primitives::vec::Vec4;
+/// # use toyengine::primitives::vec::Vec4;
 /// // Homogeneous point (w=1)
 /// let point = Vec4::new(10.0, 20.0, 30.0, 1.0);
 ///
@@ -62,7 +62,7 @@ impl Vec4 {
     /// # Examples
     ///
     /// ```rust
-    /// use toyengine::primitives::vec::Vec4;
+    /// # use toyengine::primitives::vec::Vec4;
     /// let point = Vec4::new(1.0, 2.0, 3.0, 1.0); // Homogeneous point
     /// let direction = Vec4::new(0.0, 1.0, 0.0, 0.0); // Homogeneous direction
     /// let color = Vec4::new(1.0, 0.0, 0.0, 1.0); // RGBA red
@@ -79,7 +79,7 @@ impl Vec4 {
     /// # Examples
     ///
     /// ```rust
-    /// use toyengine::primitives::vec::Vec4;
+    /// # use toyengine::primitives::vec::Vec4;
     /// let origin = Vec4::zero();
     /// assert_eq!(origin, Vec4::new(0.0, 0.0, 0.0, 0.0));
     /// ```
@@ -100,7 +100,7 @@ impl Vec4 {
     /// # Examples
     ///
     /// ```rust
-    /// use toyengine::primitives::vec::Vec4;
+    /// # use toyengine::primitives::vec::Vec4;
     /// let uniform_scale = Vec4::one();
     /// ```
     #[inline]
@@ -123,7 +123,7 @@ impl Vec4 {
     /// # Examples
     ///
     /// ```rust
-    /// use toyengine::primitives::vec::Vec4;
+    /// # use toyengine::primitives::vec::Vec4;
     /// let uniform = Vec4::splat(5.0);
     /// assert_eq!(uniform, Vec4::new(5.0, 5.0, 5.0, 5.0));
     /// ```
@@ -199,7 +199,7 @@ impl Vec4 {
     /// # Examples
     ///
     /// ```rust
-    /// use toyengine::primitives::vec::Vec4;
+    /// # use toyengine::primitives::vec::Vec4;
     /// let a = Vec4::new(1.0, 2.0, 3.0, 4.0);
     /// let b = Vec4::new(2.0, 3.0, 4.0, 5.0);
     /// assert_eq!(a.dot(&b), 40.0); // 2 + 6 + 12 + 20
@@ -221,7 +221,7 @@ impl Vec4 {
     /// # Examples
     ///
     /// ```rust
-    /// use toyengine::primitives::vec::Vec4;
+    /// # use toyengine::primitives::vec::Vec4;
     /// let v = Vec4::new(1.0, 2.0, 2.0, 4.0);
     /// assert_eq!(v.length_squared(), 25.0); // 1 + 4 + 4 + 16 = 25
     /// ```
@@ -245,7 +245,7 @@ impl Vec4 {
     /// # Examples
     ///
     /// ```rust
-    /// use toyengine::primitives::vec::Vec4;
+    /// # use toyengine::primitives::vec::Vec4;
     /// let v = Vec4::new(1.0, 2.0, 2.0, 4.0);
     /// assert_eq!(v.length(), 5.0);
     /// ```
@@ -263,7 +263,7 @@ impl Vec4 {
     /// # Examples
     ///
     /// ```rust
-    /// use toyengine::primitives::vec::Vec4;
+    /// # use toyengine::primitives::vec::Vec4;
     /// let mut v = Vec4::new(1.0, 2.0, 2.0, 4.0);
     /// v.normalize();
     /// assert!((v.length() - 1.0).abs() < 0.0001); // Length is ~1.0
@@ -272,11 +272,20 @@ impl Vec4 {
     pub fn normalize(&mut self) {
         let length = self.length();
         if length > 0.0 {
-            self.x /= length;
-            self.y /= length;
-            self.z /= length;
-            self.w /= length;
+           *self /= length;
         }
+    }
+
+    /// Checks if the vector is normalized (unit length).
+    /// Uses precision threshold of 2e-4 to account for floating-point errors.
+    /// # Examples
+    /// ```rust
+    /// # use toyengine::primitives::vec::{Vec4, NORMALIZED_PRECISION_THRESHOLD};
+    /// let v = Vec4::new(1.0, 0.0, 0.0, 0.0);
+    /// assert!(v.is_normalized());
+    /// ```
+    pub fn is_normalized(&self) -> bool {
+        (self.length_squared() - 1.0).abs() < NORMALIZED_PRECISION_THRESHOLD
     }
 
     /// Computes the distance between two points represented as vectors.
@@ -287,7 +296,7 @@ impl Vec4 {
     /// # Examples
     ///
     /// ```rust
-    /// use toyengine::primitives::vec::Vec4;
+    /// # use toyengine::primitives::vec::Vec4;
     /// let a = Vec4::new(0.0, 0.0, 0.0, 0.0);
     /// let b = Vec4::new(1.0, 2.0, 2.0, 4.0);
     /// assert_eq!(a.distance(&b), 5.0);
@@ -305,7 +314,7 @@ impl Vec4 {
     /// # Examples
     ///
     /// ```rust
-    /// use toyengine::primitives::vec::Vec4;
+    /// # use toyengine::primitives::vec::Vec4;
     /// let a = Vec4::new(0.0, 0.0, 0.0, 0.0);
     /// let b = Vec4::new(1.0, 2.0, 2.0, 4.0);
     /// assert_eq!(a.distance_squared(&b), 25.0);
@@ -330,7 +339,7 @@ impl Vec4 {
     /// # Examples
     ///
     /// ```rust
-    /// use toyengine::primitives::vec::Vec4;
+    /// # use toyengine::primitives::vec::Vec4;
     /// let start = Vec4::new(0.0, 0.0, 0.0, 0.0);
     /// let end = Vec4::new(10.0, 10.0, 10.0, 10.0);
     /// let midpoint = start.lerp(&end, 0.5);
@@ -429,7 +438,7 @@ impl Vec4 {
     /// # Examples
     ///
     /// ```rust
-    /// use toyengine::primitives::vec::Vec4;
+    /// # use toyengine::primitives::vec::Vec4;
     /// let v = Vec4::new(-5.0, 15.0, 20.0, 25.0);
     /// let clamped = v.clamp(Vec4::ZERO, Vec4::new(10.0, 10.0, 10.0, 10.0));
     /// assert_eq!(clamped, Vec4::new(0.0, 10.0, 10.0, 10.0));
@@ -450,7 +459,7 @@ impl Vec4 {
     /// # Examples
     ///
     /// ```rust
-    /// use toyengine::primitives::vec::Vec4;
+    /// # use toyengine::primitives::vec::Vec4;
     /// let v = Vec4::new(-3.0, 4.0, -5.0, 6.0);
     /// assert_eq!(v.abs(), Vec4::new(3.0, 4.0, 5.0, 6.0));
     /// ```
@@ -470,7 +479,7 @@ impl Vec4 {
     /// # Examples
     ///
     /// ```rust
-    /// use toyengine::primitives::vec::Vec4;
+    /// # use toyengine::primitives::vec::Vec4;
     /// let v = Vec4::new(3.0, 1.0, 2.0, 4.0);
     /// assert_eq!(v.min_component(), 1.0);
     /// ```
@@ -485,7 +494,7 @@ impl Vec4 {
     /// # Examples
     ///
     /// ```rust
-    /// use toyengine::primitives::vec::Vec4;
+    /// # use toyengine::primitives::vec::Vec4;
     /// let v = Vec4::new(3.0, 1.0, 2.0, 4.0);
     /// assert_eq!(v.max_component(), 4.0);
     /// ```
@@ -500,7 +509,7 @@ impl Vec4 {
     /// # Examples
     ///
     /// ```rust
-    /// use toyengine::primitives::vec::{Vec3, Vec4};
+    /// # use toyengine::primitives::vec::{Vec3, Vec4};
     /// let v4 = Vec4::new(1.0, 2.0, 3.0, 4.0);
     /// let v3 = v4.truncate();
     /// assert_eq!(v3, Vec3::new(1.0, 2.0, 3.0));
@@ -542,7 +551,7 @@ impl Vec4 {
     /// # Examples
     ///
     /// ```rust
-    /// use toyengine::primitives::vec::Vec4;
+    /// # use toyengine::primitives::vec::Vec4;
     /// let v = Vec4::new(1.0, 2.0, 2.0, 4.0).with_normalize();
     /// assert!((v.length() - 1.0).abs() < 0.0001);
     /// ```
@@ -569,7 +578,7 @@ impl Vec4 {
     /// # Examples
     ///
     /// ```rust
-    /// use toyengine::primitives::vec::Vec4;
+    /// # use toyengine::primitives::vec::Vec4;
     /// let result = Vec4::new(0.0, 0.0, 0.0, 0.0)
     ///     .with_lerp(&Vec4::new(10.0, 10.0, 10.0, 10.0), 0.5)
     ///     .with_mul_scalar(2.0);
@@ -594,7 +603,7 @@ impl Add for Vec4 {
     /// # Examples
     ///
     /// ```rust
-    /// use toyengine::primitives::vec::Vec4;
+    /// # use toyengine::primitives::vec::Vec4;
     /// let a = Vec4::new(1.0, 2.0, 3.0, 4.0);
     /// let b = Vec4::new(5.0, 6.0, 7.0, 8.0);
     /// let result = a + b;
@@ -643,7 +652,7 @@ impl Sub for Vec4 {
     /// # Examples
     ///
     /// ```rust
-    /// use toyengine::primitives::vec::Vec4;
+    /// # use toyengine::primitives::vec::Vec4;
     /// let a = Vec4::new(10.0, 12.0, 14.0, 16.0);
     /// let b = Vec4::new(5.0, 6.0, 7.0, 8.0);
     /// let result = a - b;
@@ -692,7 +701,7 @@ impl Mul<f32> for Vec4 {
     /// # Examples
     ///
     /// ```rust
-    /// use toyengine::primitives::vec::Vec4;
+    /// # use toyengine::primitives::vec::Vec4;
     /// let v = Vec4::new(1.0, 2.0, 3.0, 4.0);
     /// let result = v * 2.0;
     /// assert_eq!(result, Vec4::new(2.0, 4.0, 6.0, 8.0));
@@ -724,7 +733,7 @@ impl Mul<Vec4> for f32 {
     /// # Examples
     ///
     /// ```rust
-    /// use toyengine::primitives::vec::Vec4;
+    /// # use toyengine::primitives::vec::Vec4;
     /// let v = Vec4::new(1.0, 2.0, 3.0, 4.0);
     /// let result = 2.0 * v;
     /// assert_eq!(result, Vec4::new(2.0, 4.0, 6.0, 8.0));
@@ -756,7 +765,7 @@ impl Mul for Vec4 {
     /// # Examples
     ///
     /// ```rust
-    /// use toyengine::primitives::vec::Vec4;
+    /// # use toyengine::primitives::vec::Vec4;
     /// let a = Vec4::new(2.0, 3.0, 4.0, 5.0);
     /// let b = Vec4::new(6.0, 7.0, 8.0, 9.0);
     /// let result = a * b;
@@ -805,7 +814,7 @@ impl Div<f32> for Vec4 {
     /// # Examples
     ///
     /// ```rust
-    /// use toyengine::primitives::vec::Vec4;
+    /// # use toyengine::primitives::vec::Vec4;
     /// let v = Vec4::new(6.0, 9.0, 12.0, 15.0);
     /// let result = v / 3.0;
     /// assert_eq!(result, Vec4::new(2.0, 3.0, 4.0, 5.0));
@@ -837,7 +846,7 @@ impl Div<Vec4> for f32 {
     /// # Examples
     ///
     /// ```rust
-    /// use toyengine::primitives::vec::Vec4;
+    /// # use toyengine::primitives::vec::Vec4;
     /// let v = Vec4::new(2.0, 4.0, 8.0, 16.0);
     /// let result = 32.0 / v;
     /// assert_eq!(result, Vec4::new(16.0, 8.0, 4.0, 2.0));
@@ -869,7 +878,7 @@ impl Div for Vec4 {
     /// # Examples
     ///
     /// ```rust
-    /// use toyengine::primitives::vec::Vec4;
+    /// # use toyengine::primitives::vec::Vec4;
     /// let a = Vec4::new(12.0, 21.0, 32.0, 45.0);
     /// let b = Vec4::new(2.0, 3.0, 4.0, 5.0);
     /// let result = a / b;
@@ -918,7 +927,7 @@ impl Neg for Vec4 {
     /// # Examples
     ///
     /// ```rust
-    /// use toyengine::primitives::vec::Vec4;
+    /// # use toyengine::primitives::vec::Vec4;
     /// let v = Vec4::new(1.0, -2.0, 3.0, -4.0);
     /// let result = -v;
     /// assert_eq!(result, Vec4::new(-1.0, 2.0, -3.0, 4.0));
@@ -949,7 +958,7 @@ impl AddAssign for Vec4 {
     /// # Examples
     ///
     /// ```rust
-    /// use toyengine::primitives::vec::Vec4;
+    /// # use toyengine::primitives::vec::Vec4;
     /// let mut v = Vec4::new(1.0, 2.0, 3.0, 4.0);
     /// v += Vec4::new(5.0, 6.0, 7.0, 8.0);
     /// assert_eq!(v, Vec4::new(6.0, 8.0, 10.0, 12.0));
@@ -976,7 +985,7 @@ impl SubAssign for Vec4 {
     /// # Examples
     ///
     /// ```rust
-    /// use toyengine::primitives::vec::Vec4;
+    /// # use toyengine::primitives::vec::Vec4;
     /// let mut v = Vec4::new(10.0, 12.0, 14.0, 16.0);
     /// v -= Vec4::new(5.0, 6.0, 7.0, 8.0);
     /// assert_eq!(v, Vec4::new(5.0, 6.0, 7.0, 8.0));
@@ -1003,7 +1012,7 @@ impl MulAssign<f32> for Vec4 {
     /// # Examples
     ///
     /// ```rust
-    /// use toyengine::primitives::vec::Vec4;
+    /// # use toyengine::primitives::vec::Vec4;
     /// let mut v = Vec4::new(1.0, 2.0, 3.0, 4.0);
     /// v *= 2.0;
     /// assert_eq!(v, Vec4::new(2.0, 4.0, 6.0, 8.0));
@@ -1030,7 +1039,7 @@ impl MulAssign for Vec4 {
     /// # Examples
     ///
     /// ```rust
-    /// use toyengine::primitives::vec::Vec4;
+    /// # use toyengine::primitives::vec::Vec4;
     /// let mut v = Vec4::new(2.0, 3.0, 4.0, 5.0);
     /// v *= Vec4::new(6.0, 7.0, 8.0, 9.0);
     /// assert_eq!(v, Vec4::new(12.0, 21.0, 32.0, 45.0));
@@ -1057,7 +1066,7 @@ impl DivAssign<f32> for Vec4 {
     /// # Examples
     ///
     /// ```rust
-    /// use toyengine::primitives::vec::Vec4;
+    /// # use toyengine::primitives::vec::Vec4;
     /// let mut v = Vec4::new(6.0, 9.0, 12.0, 15.0);
     /// v /= 3.0;
     /// assert_eq!(v, Vec4::new(2.0, 3.0, 4.0, 5.0));
@@ -1084,7 +1093,7 @@ impl DivAssign for Vec4 {
     /// # Examples
     ///
     /// ```rust
-    /// use toyengine::primitives::vec::Vec4;
+    /// # use toyengine::primitives::vec::Vec4;
     /// let mut v = Vec4::new(12.0, 21.0, 32.0, 45.0);
     /// v /= Vec4::new(2.0, 3.0, 4.0, 5.0);
     /// assert_eq!(v, Vec4::new(6.0, 7.0, 8.0, 9.0));
@@ -1118,7 +1127,7 @@ impl From<[f32; 4]> for Vec4 {
     /// # Examples
     ///
     /// ```rust
-    /// use toyengine::primitives::vec::Vec4;
+    /// # use toyengine::primitives::vec::Vec4;
     /// let v: Vec4 = [1.0, 2.0, 3.0, 4.0].into();
     /// assert_eq!(v, Vec4::new(1.0, 2.0, 3.0, 4.0));
     /// ```
@@ -1147,7 +1156,7 @@ impl From<(f32, f32, f32, f32)> for Vec4 {
     /// # Examples
     ///
     /// ```rust
-    /// use toyengine::primitives::vec::Vec4;
+    /// # use toyengine::primitives::vec::Vec4;
     /// let v: Vec4 = (1.0, 2.0, 3.0, 4.0).into();
     /// assert_eq!(v, Vec4::new(1.0, 2.0, 3.0, 4.0));
     /// ```
@@ -1176,7 +1185,7 @@ impl From<Vec4> for [f32; 4] {
     /// # Examples
     ///
     /// ```rust
-    /// use toyengine::primitives::vec::Vec4;
+    /// # use toyengine::primitives::vec::Vec4;
     /// let v = Vec4::new(1.0, 2.0, 3.0, 4.0);
     /// let arr: [f32; 4] = v.into();
     /// assert_eq!(arr, [1.0, 2.0, 3.0, 4.0]);
@@ -1200,7 +1209,7 @@ impl From<Vec4> for (f32, f32, f32, f32) {
     ///
     /// # Examples
     /// ```rust
-    /// use toyengine::primitives::vec::Vec4;
+    /// # use toyengine::primitives::vec::Vec4;
     /// let v = Vec4::new(1.0, 2.0, 3.0, 4.0);
     /// let tuple: (f32, f32, f32, f32) = v.into();
     /// assert_eq!(tuple, (1.0, 2.0, 3.0, 4.0));
