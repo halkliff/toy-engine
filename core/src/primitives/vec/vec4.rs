@@ -33,6 +33,7 @@ use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssi
 /// let red = Vec4::new(1.0, 0.0, 0.0, 1.0); // Opaque red
 /// ```
 #[derive(Copy, Clone, Debug, PartialEq)]
+#[repr(C)]
 pub struct Vec4 {
     /// X component (or red channel)
     pub x: f32,

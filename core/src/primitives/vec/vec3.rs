@@ -35,6 +35,7 @@ use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssi
 /// let cross = Vec3::X.cross(&Vec3::Y); // Results in Vec3::Z (right-hand rule)
 /// ```
 #[derive(Copy, Clone, Debug, PartialEq)]
+#[repr(C)]
 pub struct Vec3 {
     /// X component (horizontal right axis)
     pub x: f32,

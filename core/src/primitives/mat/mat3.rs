@@ -42,6 +42,7 @@ use std::ops::{Add, AddAssign, Mul, MulAssign, Sub, SubAssign};
 /// let transformed = v * combined;
 /// ```
 #[derive(Debug, Clone, Copy, PartialEq)]
+#[repr(C)]
 pub struct Matrix3 {
     /// First row of the matrix (x-axis in transformation context)
     pub row_x: Vec3,

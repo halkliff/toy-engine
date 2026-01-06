@@ -30,6 +30,7 @@ use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssi
 /// let distance = position.distance(&Vec2::ZERO);
 /// ```
 #[derive(Copy, Clone, Debug, PartialEq)]
+#[repr(C)]
 pub struct Vec2 {
     /// X component (horizontal axis, typically right)
     pub x: f32,

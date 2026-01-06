@@ -66,6 +66,7 @@ const GIMBAL_LOCK_THRESHOLD: f32 = 0.99999;
 /// let q = Quaternion::new(0.0, 0.0, 0.0, 1.0); // Identity quaternion
 /// ```
 #[derive(Debug, Clone, Copy, PartialEq)]
+#[repr(transparent)]
 pub struct Quaternion(pub Vec4);
 
 impl Quaternion {

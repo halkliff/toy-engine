@@ -1543,13 +1543,13 @@ mod tests {
             Vec3::new(2.0, 3.0, 4.0)  // Non-uniform scale
         );
         let matrix = transform.to_matrix4();
-        
+
         // With row vectors and identity rotation, the matrix should be:
         // [ 2  0  0  0 ]
         // [ 0  3  0  0 ]
         // [ 0  0  4  0 ]
         // [ 0  0  0  1 ]
-        
+
         // Each row should be scaled by its corresponding factor
         assert!(vec3_approx_eq(
             Vec3::new(matrix.row_x.x, matrix.row_x.y, matrix.row_x.z),
@@ -1576,27 +1576,27 @@ mod tests {
             Quaternion::from_axis_angle(Vec3::Z, FRAC_PI_2),
             Vec3::new(2.0, 3.0, 1.0)
         );
-        
+
         let point = Vec3::new(1.0, 1.0, 1.0);
-        
+
         // Transform via direct method (verify it doesn't error)
         let _direct = transform.transform_point(point);
-        
+
         // Transform via matrix (point is implicitly [x, y, z, 1] when multiplied by matrix)
         // For row vectors: result = point * matrix
         // We can verify by checking the scaled basis vectors
         let matrix = transform.to_matrix4();
-        
+
         // The rotation part (row_x, row_y, row_z) should represent:
         // - row_x: X-axis rotated and scaled
-        // - row_y: Y-axis rotated and scaled  
+        // - row_y: Y-axis rotated and scaled
         // - row_z: Z-axis rotated and scaled
-        
+
         // For a 90° Z rotation with scale (2, 3, 1):
         // - X-axis (1,0,0) → (0,1,0) → scaled by 2 → (0,2,0)
         // - Y-axis (0,1,0) → (-1,0,0) → scaled by 3 → (-3,0,0)
         // - Z-axis (0,0,1) → (0,0,1) → scaled by 1 → (0,0,1)
-        
+
         assert!(vec3_approx_eq(
             Vec3::new(matrix.row_x.x, matrix.row_x.y, matrix.row_x.z),
             Vec3::new(0.0, 2.0, 0.0),

@@ -72,6 +72,7 @@ use std::ops::{Add, AddAssign, Mul, MulAssign, Sub, SubAssign};
 /// let transformed = mvp.transform_point(point);
 /// ```
 #[derive(Debug, Clone, Copy, PartialEq)]
+#[repr(C)]
 pub struct Matrix4 {
     /// First row of the matrix (x-axis in transformation context)
     pub row_x: Vec4,
