@@ -21,3 +21,4 @@
 //! ```
 
 pub mod primitives;
+pub mod math;
