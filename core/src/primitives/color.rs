@@ -3,6 +3,28 @@
 //! Includes RGB, ARGB, HSL, HSLA, HSV, and HSVA color types with associated methods and traits.
 //! Provides conversions, packing/unpacking, and basic color operations.
 //!
+//! # Examples
+//!
+//! ```rust
+//! use toyengine::primitives::color::{RGB, ARGB, HSL, HSV, LinearRGB};
+//! use toyengine::primitives::vec::Vec3;
+//!
+//! // Create colors in different color spaces
+//! let red = RGB::new(255, 0, 0);
+//! let transparent_red = ARGB::new(128, 255, 0, 0);
+//!
+//! // Convert between color spaces
+//! let hsl_color = red.to_hsl();
+//! let hsv_color = red.to_hsv();
+//! let linear_color: LinearRGB = red.into();
+//!
+//! // Manipulate colors in HSL space
+//! let hue_shifted = HSL::new(180.0, 1.0, 0.5); // Cyan
+//! let rgb_result: RGB = hue_shifted.into();
+//!
+//! // Convert colors to vectors for calculations
+//! let color_vec: Vec3 = red.into();
+//! ```
 
 mod conversions;
 mod traits;

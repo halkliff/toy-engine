@@ -3,6 +3,32 @@
 //! HSL (Hue, Saturation, Lightness) and HSLA (with Alpha) color types.
 //! More intuitive for color adjustments compared to RGB.
 //! Provides methods for hue rotation, saturation/lightness adjustment, and alpha fading.
+//!
+//! # Examples
+//!
+//! ```rust
+//! use toyengine::primitives::color::{HSL, HSLA, RGB};
+//!
+//! // Create colors in HSL space
+//! let cyan = HSL::new(180.0, 1.0, 0.5);
+//! let pastel_pink = HSL::new(350.0, 0.8, 0.75);
+//!
+//! // Create with alpha
+//! let transparent_blue = HSLA::new(240.0, 1.0, 0.5, 0.5);
+//!
+//! // Convert from RGB
+//! let rgb = RGB::new(255, 128, 0);
+//! let hsl = rgb.to_hsl();
+//!
+//! // Adjust hue for color shifting
+//! let hue_shifted = hsl.with_hue_offset(60.0);
+//!
+//! // Adjust saturation for vibrancy control
+//! let desaturated = hsl.with_saturation(0.5);
+//!
+//! // Convert back to RGB
+//! let result: RGB = hue_shifted.into();
+//! ```
 
 use crate::primitives::color::{HUE_MAX_DEGREES, MAX_PERCENTAGE, MIN_PERCENTAGE, Hue, Percentage, Solid, Color};
 

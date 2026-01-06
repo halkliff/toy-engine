@@ -5,6 +5,24 @@
 //! - Modern GPUs
 //! - Many image formats (PNG, DDS)
 //! - Compositing operations
+//!
+//! # Examples
+//!
+//! ```rust
+//! use toyengine::primitives::color::{ARGB, PremultipliedARGB};
+//!
+//! // Convert from standard ARGB to premultiplied
+//! let argb = ARGB::new(128, 255, 0, 0); // 50% opaque red
+//! let premul: PremultipliedARGB = argb.into();
+//!
+//! // Direct creation for GPU upload
+//! let sprite = PremultipliedARGB::new(0.5, 0.0, 0.0, 0.5);
+//!
+//! // Fast alpha blending
+//! let foreground = PremultipliedARGB::new(0.5, 0.0, 0.0, 0.5);
+//! let background = PremultipliedARGB::new(0.2, 0.3, 0.4, 1.0);
+//! let blended = foreground.blend(&background);
+//! ```
 
 /// Premultiplied RGBA color with floating-point channels in [0.0, 1.0] range.
 ///

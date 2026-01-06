@@ -2,6 +2,26 @@
 //!
 //! Linear RGB is essential for correct lighting calculations, blending, and color interpolation.
 //! Unlike sRGB (which has gamma correction), linear RGB values are proportional to light intensity.
+//!
+//! # Examples
+//!
+//! ```rust
+//! use toyengine::primitives::color::{RGB, LinearRGB, LinearARGB, ARGB};
+//!
+//! // Convert from sRGB to linear for calculations
+//! let srgb = RGB::new(128, 128, 128);
+//! let linear: LinearRGB = srgb.into();
+//!
+//! // Perform physically accurate lighting calculations
+//! let lit = LinearRGB::new(linear.r * 2.0, linear.g * 2.0, linear.b * 2.0);
+//!
+//! // Convert back to sRGB for display
+//! let display: RGB = lit.into();
+//!
+//! // With alpha channel
+//! let argb = ARGB::new(128, 255, 0, 0);
+//! let linear_alpha: LinearARGB = argb.into();
+//! ```
 
 use crate::primitives::color::{Color, MAX_PERCENTAGE, MIN_PERCENTAGE, Solid};
 use crate::primitives::vec;

@@ -6,6 +6,34 @@
 //! - [`HSV`] / [`HSVA`]: Hue-Saturation-Value (cylindrical color space)
 //! - [`LinearRGB`] / [`LinearARGB`]: Physically linear RGB for correct lighting calculations
 //! - [`PremultipliedARGB`]: GPU-optimized format with alpha premultiplication
+//!
+//! # Examples
+//!
+//! ```rust
+//! use toyengine::primitives::color::{RGB, HSL, HSV, LinearRGB, ARGB, PremultipliedARGB};
+//!
+//! // RGB to other formats
+//! let red = RGB::new(255, 0, 0);
+//! let hsl: HSL = red.into();
+//! let hsv: HSV = red.into();
+//! let linear: LinearRGB = red.into();
+//!
+//! // HSL to RGB
+//! let cyan_hsl = HSL::new(180.0, 1.0, 0.5);
+//! let cyan_rgb: RGB = cyan_hsl.into();
+//!
+//! // HSV to RGB
+//! let yellow_hsv = HSV::new(60.0, 1.0, 1.0);
+//! let yellow_rgb: RGB = yellow_hsv.into();
+//!
+//! // ARGB with premultiplication
+//! let argb = ARGB::new(128, 255, 0, 0);
+//! let premul: PremultipliedARGB = argb.into();
+//!
+//! // Linear to sRGB for display
+//! let lit_linear = LinearRGB::new(0.5, 0.3, 0.2);
+//! let display: RGB = lit_linear.into();
+//! ```
 
 use crate::primitives::color::spaces::{
     ARGB, HSL, HSLA, HSV, HSVA, LinearARGB, LinearRGB, PremultipliedARGB, RGB,

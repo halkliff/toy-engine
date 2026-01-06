@@ -4,6 +4,32 @@
 //! HSV is often preferred by artists and designers because the Value component
 //! directly controls brightness, making it more intuitive than HSL's Lightness.
 //! Provides methods for hue rotation, saturation/value adjustment, and alpha fading.
+//!
+//! # Examples
+//!
+//! ```rust
+//! use toyengine::primitives::color::{HSV, HSVA, RGB};
+//!
+//! // Create colors in HSV space
+//! let bright_red = HSV::new(0.0, 1.0, 1.0);
+//! let dark_green = HSV::new(120.0, 1.0, 0.5);
+//!
+//! // Create with alpha
+//! let semi_transparent_yellow = HSVA::new(60.0, 1.0, 1.0, 0.5);
+//!
+//! // Convert from RGB
+//! let rgb = RGB::new(255, 0, 128);
+//! let hsv = rgb.to_hsv();
+//!
+//! // Adjust value for brightness control
+//! let darker = hsv.with_value(0.5);
+//!
+//! // Rotate hue for complementary color
+//! let complementary = hsv.with_hue_offset(180.0);
+//!
+//! // Convert back to RGB
+//! let result: RGB = complementary.into();
+//! ```
 
 use crate::primitives::color::{HUE_MAX_DEGREES, MAX_PERCENTAGE, MIN_PERCENTAGE, Hue, Percentage, Solid, Color};
 

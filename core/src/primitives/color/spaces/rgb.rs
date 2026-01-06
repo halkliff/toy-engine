@@ -6,6 +6,30 @@
 //! Provides common operations like addition, multiplication, interpolation, and conversions.
 //! Also includes fast approximations for sRGB to linear RGB conversion.
 //! Supports conversions to/from vector types for graphics applications.
+//!
+//! # Examples
+//!
+//! ```rust
+//! use toyengine::primitives::color::{RGB, ARGB, LinearRGB};
+//! use toyengine::primitives::vec::Vec3;
+//!
+//! // Create colors
+//! let red = RGB::new(255, 0, 0);
+//! let blue_transparent = ARGB::new(128, 0, 0, 255);
+//!
+//! // Parse from hex
+//! let orange = RGB::from_hex(0xFF8000);
+//! let green_alpha = ARGB::from_hex(0x80_00_FF_00); // 50% green
+//!
+//! // Color arithmetic
+//! let mixed = red + RGB::new(0, 100, 0);
+//!
+//! // Convert to linear space for lighting
+//! let linear: LinearRGB = red.into();
+//!
+//! // Convert to vectors for calculations
+//! let color_vec: Vec3 = red.into();
+//! ```
 
 use crate::primitives::color::{
     Color, FAST_DIV_255_SHIFT, INV_U8_MAX, LUMINANCE_BLUE_WEIGHT, LUMINANCE_GREEN_WEIGHT,

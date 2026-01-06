@@ -9,6 +9,7 @@
     "hsla",
     "inplace",
     "lerp",
+    "premult",
     "slerp",
     "SRGB",
     "toyengine"

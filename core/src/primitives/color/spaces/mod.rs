@@ -7,8 +7,8 @@ pub mod linear;
 pub mod premult;
 
 // Re-export all color types
-pub use rgb::{RGB, ARGB};
-pub use hsl::{HSL, HSLA};
-pub use hsv::{HSV, HSVA};
-pub use linear::{LinearRGB, LinearARGB};
-pub use premult::PremultipliedARGB;
+pub use rgb::*;
+pub use hsl::*;
+pub use hsv::*;
+pub use linear::*;
+pub use premult::*;

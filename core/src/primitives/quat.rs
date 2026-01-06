@@ -9,6 +9,30 @@
 //! and w represents the scalar part. The module includes common operations such as
 //! multiplication, normalization, conjugation, and conversion to/from rotation matrices
 //! and Euler angles.
+//!
+//! # Examples
+//!
+//! ```rust
+//! use toyengine::primitives::quat::Quaternion;
+//! use toyengine::primitives::vec::Vec3;
+//!
+//! // Create a rotation around the Y-axis (45 degrees)
+//! let rotation = Quaternion::from_axis_angle(Vec3::Y, std::f32::consts::FRAC_PI_4);
+//!
+//! // Apply rotation to a vector
+//! let point = Vec3::new(1.0, 0.0, 0.0);
+//! let rotated = rotation * point;
+//!
+//! // Combine rotations
+//! let rot1 = Quaternion::from_axis_angle(Vec3::Y, std::f32::consts::FRAC_PI_4);
+//! let rot2 = Quaternion::from_axis_angle(Vec3::X, std::f32::consts::FRAC_PI_6);
+//! let combined = rot1 * rot2;
+//!
+//! // Interpolate between rotations (SLERP)
+//! let start = Quaternion::identity();
+//! let end = Quaternion::from_axis_angle(Vec3::Y, std::f32::consts::PI);
+//! let halfway = start.slerp(end, 0.5);
+//! ```
 
 use super::mat::Matrix4;
 use super::vec::{Vec3, Vec4};
@@ -38,7 +62,7 @@ const GIMBAL_LOCK_THRESHOLD: f32 = 0.99999;
 /// # Example
 ///
 /// ```rust
-/// use toyengine::primitives::quat::Quaternion;
+/// # use toyengine::primitives::quat::Quaternion;
 /// let q = Quaternion::new(0.0, 0.0, 0.0, 1.0); // Identity quaternion
 /// ```
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -50,7 +74,7 @@ impl Quaternion {
     /// # Examples
     ///
     /// ```rust
-    /// use toyengine::primitives::quat::Quaternion;
+    /// # use toyengine::primitives::quat::Quaternion;
     /// let q = Quaternion::new(1.0, 0.0, 0.0, 0.0);
     /// ```
     #[inline]
@@ -63,7 +87,7 @@ impl Quaternion {
     /// # Examples
     ///
     /// ```rust
-    /// use toyengine::primitives::quat::Quaternion;
+    /// # use toyengine::primitives::quat::Quaternion;
     /// let identity = Quaternion::identity(); // Quaternion(0.0, 0.0, 0.0, 1.0)
     /// ```
     #[inline]
@@ -81,8 +105,8 @@ impl Quaternion {
     /// # Examples
     ///
     /// ```rust
-    /// use toyengine::primitives::quat::Quaternion;
-    /// use toyengine::primitives::vec::Vec3;
+    /// # use toyengine::primitives::quat::Quaternion;
+    /// # use toyengine::primitives::vec::Vec3;
     /// let axis = Vec3::new(0.0, 1.0, 0.0); // Y-axis
     /// let angle = std::f32::consts::FRAC_PI_2; // 90 degrees in radians
     /// let q = Quaternion::from_axis_angle(axis, angle);
@@ -112,8 +136,8 @@ impl Quaternion {
     ///
     /// # Examples
     /// ```rust
-    /// use toyengine::primitives::quat::Quaternion;
-    /// use toyengine::primitives::vec::Vec3;
+    /// # use toyengine::primitives::quat::Quaternion;
+    /// # use toyengine::primitives::vec::Vec3;
     /// let euler = Vec3::new(0.0, 0.0, std::f32::consts::FRAC_PI_2); // 90 degrees roll
     /// let q = Quaternion::from_euler_zxy(euler);
     /// ```
@@ -158,7 +182,7 @@ impl Quaternion {
     /// # Examples
     ///
     /// ```rust
-    /// use toyengine::primitives::quat::Quaternion;
+    /// # use toyengine::primitives::quat::Quaternion;
     /// let q1 = Quaternion::identity();
     /// let q2 = Quaternion::identity();
     /// assert_eq!(q1.dot(&q2), 1.0);
@@ -180,7 +204,7 @@ impl Quaternion {
     /// # Examples
     ///
     /// ```rust
-    /// use toyengine::primitives::quat::Quaternion;
+    /// # use toyengine::primitives::quat::Quaternion;
     /// let q = Quaternion::new(1.0, 2.0, 2.0, 4.0);
     /// assert_eq!(q.length_squared(), 25.0);
     /// ```
@@ -200,7 +224,7 @@ impl Quaternion {
     /// # Examples
     ///
     /// ```rust
-    /// use toyengine::primitives::quat::Quaternion;
+    /// # use toyengine::primitives::quat::Quaternion;
     /// let q = Quaternion::new(1.0, 0.0, 0.0, 0.0);
     /// assert_eq!(q.length(), 1.0);
     /// ```
@@ -218,7 +242,7 @@ impl Quaternion {
     /// # Examples
     ///
     /// ```rust
-    /// use toyengine::primitives::quat::Quaternion;
+    /// # use toyengine::primitives::quat::Quaternion;
     /// let mut q = Quaternion::new(1.0, 2.0, 3.0, 4.0);
     /// q.normalize();
     /// assert!((q.length() - 1.0).abs() < 1e-6);
@@ -235,7 +259,7 @@ impl Quaternion {
     /// # Examples
     ///
     /// ```rust
-    /// use toyengine::primitives::quat::Quaternion;
+    /// # use toyengine::primitives::quat::Quaternion;
     /// let q = Quaternion::identity();
     /// assert!(q.is_normalized());
     /// ```
@@ -256,7 +280,7 @@ impl Quaternion {
     /// # Examples
     ///
     /// ```rust
-    /// use toyengine::primitives::quat::Quaternion;
+    /// # use toyengine::primitives::quat::Quaternion;
     /// let q = Quaternion::new(1.0, 2.0, 3.0, 4.0);
     /// let conj = q.conjugate();
     /// assert_eq!(conj, Quaternion::new(-1.0, -2.0, -3.0, 4.0));
@@ -278,7 +302,7 @@ impl Quaternion {
     /// # Examples
     ///
     /// ```rust
-    /// use toyengine::primitives::quat::Quaternion;
+    /// # use toyengine::primitives::quat::Quaternion;
     /// let q = Quaternion::identity();
     /// let inv = q.inverse();
     /// assert_eq!(inv, Quaternion::identity());
@@ -314,8 +338,8 @@ impl Quaternion {
     /// # Examples
     ///
     /// ```rust
-    /// use toyengine::primitives::quat::Quaternion;
-    /// use toyengine::primitives::vec::Vec3;
+    /// # use toyengine::primitives::quat::Quaternion;
+    /// # use toyengine::primitives::vec::Vec3;
     /// let q = Quaternion::from_axis_angle(Vec3::new(0.0, 0.0, 1.0), std::f32::consts::FRAC_PI_2);
     /// let v = Vec3::new(1.0, 0.0, 0.0);
     /// let rotated = q.rotate_vec3(v);
@@ -345,8 +369,8 @@ impl Quaternion {
     /// # Examples
     ///
     /// ```rust
-    /// use toyengine::primitives::quat::Quaternion;
-    /// use toyengine::primitives::vec::Vec3;
+    /// # use toyengine::primitives::quat::Quaternion;
+    /// # use toyengine::primitives::vec::Vec3;
     /// let euler = Vec3::new(0.5, 0.3, 0.7);
     /// let q = Quaternion::from_euler_zxy(euler);
     /// let recovered = q.to_euler_zxy();
@@ -403,9 +427,9 @@ impl Quaternion {
     /// # Examples
     ///
     /// ```rust
-    /// use toyengine::primitives::quat::Quaternion;
-    /// use toyengine::primitives::vec::Vec3;
-    /// use toyengine::primitives::mat::Matrix4;
+    /// # use toyengine::primitives::quat::Quaternion;
+    /// # use toyengine::primitives::vec::Vec3;
+    /// # use toyengine::primitives::mat::Matrix4;
     ///
     /// // 90-degree rotation around Y-axis
     /// let q = Quaternion::from_axis_angle(Vec3::new(0.0, 1.0, 0.0), std::f32::consts::FRAC_PI_2);
@@ -456,7 +480,7 @@ impl Quaternion {
     /// # Examples
     ///
     /// ```rust
-    /// use toyengine::primitives::quat::Quaternion;
+    /// # use toyengine::primitives::quat::Quaternion;
     /// let q1 = Quaternion::identity();
     /// let q2 = Quaternion::identity();
     /// let mid = q1.slerp(&q2, 0.5);
@@ -497,7 +521,7 @@ impl Quaternion {
     /// # Examples
     ///
     /// ```rust
-    /// use toyengine::primitives::quat::Quaternion;
+    /// # use toyengine::primitives::quat::Quaternion;
     /// let q1 = Quaternion::identity();
     /// let q2 = Quaternion::identity();
     /// assert!((q1.angle_between(&q2)).abs() < 1e-6);
@@ -518,7 +542,7 @@ impl Quaternion {
     /// # Examples
     ///
     /// ```rust
-    /// use toyengine::primitives::quat::Quaternion;
+    /// # use toyengine::primitives::quat::Quaternion;
     /// let q = Quaternion::new(1.0, 2.0, 3.0, 4.0).with_normalize();
     /// assert!((q.length() - 1.0).abs() < 1e-6);
     /// ```
@@ -535,7 +559,7 @@ impl Quaternion {
     /// # Examples
     ///
     /// ```rust
-    /// use toyengine::primitives::quat::Quaternion;
+    /// # use toyengine::primitives::quat::Quaternion;
     /// let q = Quaternion::new(1.0, 2.0, 3.0, 4.0).with_conjugate();
     /// assert_eq!(q, Quaternion::new(-1.0, -2.0, -3.0, 4.0));
     /// ```
@@ -552,7 +576,7 @@ impl Quaternion {
     /// # Examples
     ///
     /// ```rust
-    /// use toyengine::primitives::quat::Quaternion;
+    /// # use toyengine::primitives::quat::Quaternion;
     /// let q = Quaternion::identity().with_inverse();
     /// assert_eq!(q, Quaternion::identity());
     /// ```
@@ -569,7 +593,7 @@ impl Quaternion {
     /// # Examples
     ///
     /// ```rust
-    /// use toyengine::primitives::quat::Quaternion;
+    /// # use toyengine::primitives::quat::Quaternion;
     /// let q1 = Quaternion::identity();
     /// let q2 = Quaternion::identity();
     /// let result = q1.with_slerp(&q2, 0.5);
@@ -593,7 +617,7 @@ impl Add for Quaternion {
     /// # Examples
     ///
     /// ```rust
-    /// use toyengine::primitives::quat::Quaternion;
+    /// # use toyengine::primitives::quat::Quaternion;
     /// let q1 = Quaternion::new(1.0, 2.0, 3.0, 4.0);
     /// let q2 = Quaternion::new(5.0, 6.0, 7.0, 8.0);
     /// let result = q1 + q2;
@@ -637,7 +661,7 @@ impl Sub for Quaternion {
     /// # Examples
     ///
     /// ```rust
-    /// use toyengine::primitives::quat::Quaternion;
+    /// # use toyengine::primitives::quat::Quaternion;
     /// let q1 = Quaternion::new(10.0, 12.0, 14.0, 16.0);
     /// let q2 = Quaternion::new(5.0, 6.0, 7.0, 8.0);
     /// let result = q1 - q2;
@@ -689,7 +713,7 @@ impl Mul for Quaternion {
     /// # Examples
     ///
     /// ```rust
-    /// use toyengine::primitives::quat::Quaternion;
+    /// # use toyengine::primitives::quat::Quaternion;
     /// let q1 = Quaternion::identity();
     /// let q2 = Quaternion::identity();
     /// let result = q1 * q2;
@@ -741,7 +765,7 @@ impl Mul<f32> for Quaternion {
     /// # Examples
     ///
     /// ```rust
-    /// use toyengine::primitives::quat::Quaternion;
+    /// # use toyengine::primitives::quat::Quaternion;
     /// let q = Quaternion::new(1.0, 2.0, 3.0, 4.0);
     /// let result = q * 2.0;
     /// assert_eq!(result, Quaternion::new(2.0, 4.0, 6.0, 8.0));
@@ -768,7 +792,7 @@ impl Mul<Quaternion> for f32 {
     /// # Examples
     ///
     /// ```rust
-    /// use toyengine::primitives::quat::Quaternion;
+    /// # use toyengine::primitives::quat::Quaternion;
     /// let q = Quaternion::new(1.0, 2.0, 3.0, 4.0);
     /// let result = 2.0 * q;
     /// assert_eq!(result, Quaternion::new(2.0, 4.0, 6.0, 8.0));
@@ -795,7 +819,7 @@ impl Div<f32> for Quaternion {
     /// # Examples
     ///
     /// ```rust
-    /// use toyengine::primitives::quat::Quaternion;
+    /// # use toyengine::primitives::quat::Quaternion;
     /// let q = Quaternion::new(6.0, 9.0, 12.0, 15.0);
     /// let result = q / 3.0;
     /// assert_eq!(result, Quaternion::new(2.0, 3.0, 4.0, 5.0));
@@ -820,7 +844,7 @@ impl AddAssign for Quaternion {
     /// # Examples
     ///
     /// ```rust
-    /// use toyengine::primitives::quat::Quaternion;
+    /// # use toyengine::primitives::quat::Quaternion;
     /// let mut q = Quaternion::new(1.0, 2.0, 3.0, 4.0);
     /// q += Quaternion::new(5.0, 6.0, 7.0, 8.0);
     /// assert_eq!(q, Quaternion::new(6.0, 8.0, 10.0, 12.0));
@@ -844,7 +868,7 @@ impl SubAssign for Quaternion {
     /// # Examples
     ///
     /// ```rust
-    /// use toyengine::primitives::quat::Quaternion;
+    /// # use toyengine::primitives::quat::Quaternion;
     /// let mut q = Quaternion::new(10.0, 12.0, 14.0, 16.0);
     /// q -= Quaternion::new(5.0, 6.0, 7.0, 8.0);
     /// assert_eq!(q, Quaternion::new(5.0, 6.0, 7.0, 8.0));
@@ -868,7 +892,7 @@ impl MulAssign for Quaternion {
     /// # Examples
     ///
     /// ```rust
-    /// use toyengine::primitives::quat::Quaternion;
+    /// # use toyengine::primitives::quat::Quaternion;
     /// let mut q = Quaternion::identity();
     /// q *= Quaternion::identity();
     /// assert_eq!(q, Quaternion::identity());
@@ -892,7 +916,7 @@ impl MulAssign<f32> for Quaternion {
     /// # Examples
     ///
     /// ```rust
-    /// use toyengine::primitives::quat::Quaternion;
+    /// # use toyengine::primitives::quat::Quaternion;
     /// let mut q = Quaternion::new(1.0, 2.0, 3.0, 4.0);
     /// q *= 2.0;
     /// assert_eq!(q, Quaternion::new(2.0, 4.0, 6.0, 8.0));
@@ -916,7 +940,7 @@ impl DivAssign<f32> for Quaternion {
     /// # Examples
     ///
     /// ```rust
-    /// use toyengine::primitives::quat::Quaternion;
+    /// # use toyengine::primitives::quat::Quaternion;
     /// let mut q = Quaternion::new(6.0, 9.0, 12.0, 15.0);
     /// q /= 3.0;
     /// assert_eq!(q, Quaternion::new(2.0, 3.0, 4.0, 5.0));
@@ -944,8 +968,8 @@ impl From<Vec4> for Quaternion {
     /// # Examples
     ///
     /// ```rust
-    /// use toyengine::primitives::quat::Quaternion;
-    /// use toyengine::primitives::vec::Vec4;
+    /// # use toyengine::primitives::quat::Quaternion;
+    /// # use toyengine::primitives::vec::Vec4;
     /// let v = Vec4::new(0.0, 0.0, 0.0, 1.0);
     /// let q: Quaternion = v.into();
     /// assert_eq!(q, Quaternion::identity());
@@ -969,8 +993,8 @@ impl From<Quaternion> for Vec4 {
     /// # Examples
     ///
     /// ```rust
-    /// use toyengine::primitives::quat::Quaternion;
-    /// use toyengine::primitives::vec::Vec4;
+    /// # use toyengine::primitives::quat::Quaternion;
+    /// # use toyengine::primitives::vec::Vec4;
     /// let q = Quaternion::identity();
     /// let v: Vec4 = q.into();
     /// assert_eq!(v, Vec4::new(0.0, 0.0, 0.0, 1.0));
@@ -994,7 +1018,7 @@ impl From<[f32; 4]> for Quaternion {
     /// # Examples
     ///
     /// ```rust
-    /// use toyengine::primitives::quat::Quaternion;
+    /// # use toyengine::primitives::quat::Quaternion;
     /// let q: Quaternion = [0.0, 0.0, 0.0, 1.0].into();
     /// assert_eq!(q, Quaternion::identity());
     /// ```
@@ -1017,7 +1041,7 @@ impl From<Quaternion> for [f32; 4] {
     /// # Examples
     ///
     /// ```rust
-    /// use toyengine::primitives::quat::Quaternion;
+    /// # use toyengine::primitives::quat::Quaternion;
     /// let q = Quaternion::identity();
     /// let arr: [f32; 4] = q.into();
     /// assert_eq!(arr, [0.0, 0.0, 0.0, 1.0]);
@@ -1044,7 +1068,7 @@ impl Deref for Quaternion {
     /// # Examples
     ///
     /// ```rust
-    /// use toyengine::primitives::quat::Quaternion;
+    /// # use toyengine::primitives::quat::Quaternion;
     /// let q = Quaternion::identity();
     /// let v: &toyengine::primitives::vec::Vec4 = &*q;
     /// assert_eq!(*v, toyengine::primitives::vec::Vec4::new(0.0, 0.0, 0.0, 1.0));

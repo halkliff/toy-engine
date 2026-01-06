@@ -1,4 +1,19 @@
 //! Traits and utilities for color types and components.
+//!
+//! # Examples
+//!
+//! ```rust
+//! use toyengine::primitives::color::{Hue, Percentage};
+//!
+//! // Percentages automatically clamp to [0.0, 1.0]
+//! let saturation = Percentage(0.8);
+//! let out_of_range = Percentage(1.5); // Will be clamped
+//!
+//! // Hue wraps around at 360 degrees
+//! let red = Hue(0.0);
+//! let also_red = Hue(360.0); // Wraps to 0
+//! let wrapped = Hue(450.0);  // Wraps to 90
+//! ```
 
 use crate::primitives::color::{
     ARGB, HSL, HSLA, HSV, HSVA, HUE_MAX_DEGREES, MAX_PERCENTAGE, MIN_PERCENTAGE, RGB, U8_MAX_U32,
