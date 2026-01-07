@@ -10,6 +10,7 @@
     "inplace",
     "lerp",
     "premult",
+    "RAII",
     "slerp",
     "SRGB",
     "toyengine"
