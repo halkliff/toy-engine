@@ -97,7 +97,7 @@ pub use render_packet::*;
 /// - Renders last to overlay everything
 ///
 /// [`FrameManager`]: crate::frame::FrameManager
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum RenderPhase {
     Shadow,
     DepthPrePass,

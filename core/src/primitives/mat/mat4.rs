@@ -1881,7 +1881,7 @@ mod tests {
         assert!(result.approx_eq(&expected, 0.001));
 
         // Test borrowed
-        let result_borrowed = &a + &b;
+        let result_borrowed = a + b;
         assert!(result_borrowed.approx_eq(&expected, 0.001));
     }
 

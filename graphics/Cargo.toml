@@ -6,4 +6,8 @@ version.workspace = true
 description.workspace = true
 
 [dependencies]
+bitflags = { version = "2.10", features = ["bytemuck"] }
+bytemuck = { version = "1.24", features = ["derive", "zeroable_atomics", "const_zeroed", "pod_saturating"] }
+hashbrown = "0.16"
 toyengine_core = { package = "core", path = "../core" }
+wgpu = "28.0.0"

@@ -37,6 +37,8 @@
 //!
 //! **⚠️ This API is not final and is actively being developed.**
 
+use crate::backend::{RenderBackend, null_render::NullRenderBackend};
+use crate::camera::CameraData;
 use crate::frame::{FrameHandle, FrameManager};
 use crate::render::RenderPacket;
 
@@ -87,8 +89,62 @@ impl GraphicsContext {
     /// Debug mode adds minimal overhead during packet submission but increases
     /// memory usage for storing debug names. For production builds, use `false`.
     pub fn new(debug: bool) -> Self {
+        let backend = Self::_get_backend_renderer();
         GraphicsContext {
-            frame_manager: FrameManager::new(),
+            frame_manager: FrameManager::new(Box::new(backend)),
+            debug,
+        }
+    }
+
+    /// Creates a backend renderer instance, based on the current operating system and architecture.
+    ///
+    fn _get_backend_renderer() -> impl RenderBackend {
+        // #[cfg(target_os = "windows")]
+        // {
+        //     #[cfg(target_arch = "x86_64")]
+        //     {
+        //         // Return DirectX 12 backend
+        //     }
+        //     #[cfg(target_arch = "aarch64")]
+        //     {
+        //         // Return DirectX 12 backend for ARM64
+        //     }
+        // }
+        // #[cfg(target_os = "linux")]
+        // {
+        //     #[cfg(target_arch = "x86_64")]
+        //     {
+        //         // Return Vulkan backend
+        //     }
+        //     #[cfg(target_arch = "aarch64")]
+        //     {
+        //         // Return Vulkan backend for ARM64
+        //     }
+        // }
+        // #[cfg(target_os = "android")]
+        // {
+        //     // Return OpenGL ES or Vulkan backend
+        // }
+        NullRenderBackend::default()
+    }
+
+    /// Creates a new graphics context with a null renderer backend.
+    ///
+    /// This is primarily intended for testing and debugging purposes.
+    ///
+    /// # Arguments
+    ///
+    /// * `debug` - Whether to enable debug mode. When `true`, debug names and
+    ///   validation are preserved. When `false`, debug information is stripped
+    ///   for optimal performance.
+    ///
+    /// # Performance
+    ///
+    /// Debug mode adds minimal overhead during packet submission but increases
+    /// memory usage for storing debug names. For production builds, use `false`.
+    pub fn new_null_renderer(debug: bool) -> Self {
+        GraphicsContext {
+            frame_manager: FrameManager::new(Box::new(NullRenderBackend::default())),
             debug,
         }
     }
@@ -125,6 +181,24 @@ impl GraphicsContext {
         let _ctx = self.frame_manager.begin_frame();
         let frame_index = _ctx.index;
         FrameHandle::new(self, frame_index)
+    }
+
+    /// Internal method to set the camera data for a specific frame.
+    ///
+    /// This is called by [`FrameHandle::set_camera()`] and should not be called
+    /// directly by user code.
+    /// # Arguments
+    ///
+    /// * `index` - The index of the frame to set the camera data for
+    /// * `data` - The camera data to set
+    ///
+    /// # Implementation Note
+    ///
+    /// This method updates the frame's camera data, which is used during rendering
+    /// to set up view and projection matrices.
+    #[inline]
+    pub(crate) fn _set_frame_camera_data(&mut self, index: usize, data: CameraData) {
+        self.frame_manager.set_frame_camera_data(index, data);
     }
 
     /// Internal method to release a frame and submit it for GPU processing.
@@ -177,5 +251,21 @@ impl GraphicsContext {
             _packet
         };
         self.frame_manager.push_packet(frame_index, packet);
+    }
+}
+
+impl Default for GraphicsContext {
+    /// Creates a default `GraphicsContext` with a null renderer.
+    ///
+    /// This is equivalent to calling [`GraphicsContext::new_null_renderer(false)`],
+    /// which initializes a graphics context without a functional rendering backend.
+    ///
+    /// # Returns
+    ///
+    /// A new `GraphicsContext` instance with a null renderer and validation disabled.
+    ///
+    /// [`GraphicsContext::new_null_renderer(false)`]: GraphicsContext::new_null_renderer
+    fn default() -> Self {
+        Self::new_null_renderer(false)
     }
 }

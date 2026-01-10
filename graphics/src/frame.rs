@@ -55,9 +55,17 @@
 //!
 //! **⚠️ This API is not final and is actively being developed.**
 
+use crate::backend::RenderBackend;
+use crate::camera::CameraData;
 use crate::render::{RenderPacket, RenderPhase};
+
 pub mod frame_handle;
 pub use frame_handle::*;
+
+pub mod frame_data;
+pub use frame_data::*;
+
+use hashbrown::HashMap;
 
 /// Represents the current state of a frame in its lifecycle.
 ///
@@ -113,6 +121,7 @@ pub(crate) struct FrameContext {
     pub(crate) packets: Vec<RenderPacket>,
     pub(crate) frame_state: FrameState,
     pub(crate) index: usize,
+    pub(crate) frame_data: FrameData,
 }
 
 impl FrameContext {
@@ -135,6 +144,7 @@ impl FrameContext {
             packets: Vec::new(),
             frame_state: FrameState::Idle,
             index,
+            frame_data: FrameData::default(),
         }
     }
 }
@@ -172,10 +182,21 @@ impl FrameContext {
 /// the manager waits until the GPU signals completion of that fence value.
 #[derive(Debug)]
 pub(crate) struct FrameManager {
+    /// The two frame slots for double buffering.
     frames: [FrameContext; 2],
+
+    /// Index of the currently active frame slot.
     current: usize,
+
+    /// The last fence value that the GPU has completed processing.
     gpu_completed_fence: u64,
+
+    /// The next fence value to assign to a submitted frame.
     next_fence_value: u64,
+
+    backend: Box<dyn RenderBackend>,
+
+    phase_order: HashMap<RenderPhase, usize>,
 }
 
 impl FrameManager {
@@ -199,12 +220,18 @@ impl FrameManager {
     ///
     /// Both frame slots are created in the idle state, ready to be used.
     /// The manager starts with frame 0 as current and the next fence value at 1.
-    pub(crate) const fn new() -> Self {
+    pub(crate) fn new(backend: Box<dyn RenderBackend>) -> Self {
+        let mut phase_order = HashMap::new();
+        for (i, phase) in Self::PHASE_ORDER.iter().enumerate() {
+            phase_order.insert(*phase, i);
+        }
         FrameManager {
             frames: [FrameContext::new(0), FrameContext::new(1)],
             current: 0,
             gpu_completed_fence: 0,
             next_fence_value: 1,
+            backend,
+            phase_order,
         }
     }
 
@@ -222,12 +249,65 @@ impl FrameManager {
     ///
     /// Panics in debug builds if the specified frame is not in the Recording state.
     pub(crate) fn push_packet(&mut self, index: usize, packet: RenderPacket) {
-        debug_assert!(
+        assert!(
             self.frames[index].frame_state == FrameState::Recording,
             "Frame index {index} is not in recording state"
         );
 
         self.frames[index].packets.push(packet);
+    }
+
+    pub(crate) fn set_frame_camera_data(&mut self, index: usize, data: CameraData) {
+        assert!(
+            self.frames[index].frame_state == FrameState::Recording,
+            "Frame index {index} is not in recording state"
+        );
+
+        let frame_data = &mut self.frames[index].frame_data;
+
+        let frame_data_is_none = frame_data.camera.is_none();
+
+        assert!(
+            frame_data_is_none,
+            "camera data already set for frame index {index}"
+        );
+
+        if frame_data_is_none {
+            frame_data.camera = data;
+        }
+    }
+
+    pub(crate) fn set_frame_data(&mut self, index: usize, data: FrameData) {
+        let frame = &mut self.frames[index];
+        assert!(
+            frame.frame_state == FrameState::Recording,
+            "Frame index {index} is not in recording state"
+        );
+
+        let curr_frame_camera_data_is_none = frame.frame_data.is_none();
+        let frame_data_camera_data_is_none = data.is_none();
+
+        assert!(
+            curr_frame_camera_data_is_none || frame_data_camera_data_is_none,
+            "frame data already set for frame index {index}, and cannot be set more than once",
+        );
+
+        if curr_frame_camera_data_is_none || frame_data_camera_data_is_none {
+            frame.frame_data = data;
+        }
+    }
+
+    pub(crate) fn set_frame_data_prop(&mut self, index: usize, data: FrameDataProp) {
+        let frame = &mut self.frames[index];
+        assert!(
+            frame.frame_state == FrameState::Recording,
+            "Frame index {index} is not in recording state"
+        );
+
+        match data {
+            FrameDataProp::CameraData(cam_data) => self.set_frame_camera_data(index, cam_data),
+            _ => todo!("Other FrameDataProp variants not implemented yet"),
+        };
     }
 
     /// Begins a new frame, returning a mutable reference to the selected frame context.
@@ -260,15 +340,16 @@ impl FrameManager {
 
         // 2. Wait (or simulate waiting) until it's safe to reuse
         if self.frames[next_index].in_flight {
+            // This error is safe to ignore, because this condition doesn't happen synchronously.
+            // It should, however, be fixed in a real implementation.
+            #[allow(clippy::while_immutable_condition)]
             while self.frames[next_index].fence_value > self.gpu_completed_fence {
                 // In a real implementation, we would wait here.
-                // For this mockup, we simulate GPU progress.
-                self.simulate_gpu_progress(next_index);
             }
             self.frames[next_index].in_flight = false;
         }
 
-        debug_assert!(
+        assert!(
             self.frames[next_index].frame_state == FrameState::Idle,
             "Frame index {next_index} is not idle",
         );
@@ -311,14 +392,19 @@ impl FrameManager {
     /// [`begin_frame()`]: Self::begin_frame
     #[inline]
     pub(crate) fn end_frame(&mut self, frame_index: usize) {
-        debug_assert!(
-            self.frames[frame_index].packets.len() > 0,
+        assert!(
+            !self.frames[frame_index].packets.is_empty(),
             "No render packets submitted for this frame"
         );
-        debug_assert!(
+        assert!(
             self.frames[frame_index].frame_state == FrameState::Recording,
             "Current frame in index {} is not in recording state",
             frame_index
+        );
+
+        assert!(
+            !self.frames[frame_index].frame_data.camera.is_none(),
+            "Camera data not set for frame index {frame_index}",
         );
 
         // 1. Signal fence for this frame
@@ -326,15 +412,17 @@ impl FrameManager {
         self.frames[frame_index].fence_value = self.next_fence_value;
         self.next_fence_value = self.next_fence_value.wrapping_add(1);
         self.frames[frame_index].frame_state = FrameState::Submitted;
+
+        self.execute_frame(frame_index);
         // Note: frame index is advanced in begin_frame, not here
         // This keeps the current frame index valid until the next begin_frame call
     }
 
-    /// Simulates GPU processing of a frame.
+    /// Executes the rendering commands for the specified frame.
     ///
-    /// This is a placeholder implementation that demonstrates the intended GPU execution
-    /// flow. In a real implementation, this would be replaced by actual GPU command
-    /// submission and fence signaling.
+    /// This method processes all render packets in the frame according to the
+    /// predefined phase order. It handles phase transitions and packet sorting
+    /// within each phase.
     ///
     /// # Arguments
     ///
@@ -362,27 +450,41 @@ impl FrameManager {
     /// - Material batching to minimize state changes
     ///
     /// [`PHASE_ORDER`]: Self::PHASE_ORDER
-    pub(crate) fn simulate_gpu_progress(&mut self, frame_index: usize) {
-        let packets = std::mem::take(&mut self.frames[frame_index].packets);
-        for phase in Self::PHASE_ORDER {
-            let mut phase_packets = packets
-                .iter()
-                .filter(|p| p.phase == phase)
-                .collect::<Vec<_>>();
+    fn execute_frame(&mut self, frame_index: usize) {
+        let frame = &mut self.frames[frame_index];
+        let mut packets = std::mem::take(&mut frame.packets);
 
-            phase_packets.sort_by_key(|p| p.sort_key);
+        self.backend.begin_frame(&frame.frame_data);
 
-            execute_phase(phase, phase_packets);
+        let mut curr_phase: Option<RenderPhase> = None;
+
+        packets.sort_by(|a, b| {
+            let a_phase_order = self.phase_order.get(&a.phase).unwrap_or(&usize::MAX);
+            let b_phase_order = self.phase_order.get(&b.phase).unwrap_or(&usize::MAX);
+            a_phase_order
+                .cmp(b_phase_order)
+                .then_with(|| a.sort_key.cmp(&b.sort_key))
+        });
+
+        for packet in packets.iter() {
+            if curr_phase != Some(packet.phase) {
+                if let Some(phase) = curr_phase {
+                    self.backend.end_phase(phase);
+                }
+                self.backend.begin_phase(packet.phase);
+                curr_phase = Some(packet.phase);
+            }
+            self.backend.draw(packet);
         }
-        self.frames[self.current].frame_state = FrameState::Idle;
+
+        if let Some(phase) = curr_phase {
+            self.backend.end_phase(phase);
+        }
+
+        self.backend.end_frame();
+
+        frame.frame_state = FrameState::Idle;
         // Pretend the GPU finished some work
         self.gpu_completed_fence += 1;
     }
-}
-
-/// Mock executes a render phase with the given packets.
-fn execute_phase(phase: RenderPhase, packets: Vec<&RenderPacket>) {
-    // In a real implementation, this would issue draw calls to the GPU.
-    // Here, we just print out the phase and number of packets for demonstration.
-    println!("Executing phase {:?} with {} packets", phase, packets.len());
 }

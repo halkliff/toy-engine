@@ -23,6 +23,7 @@
 //!
 //! **⚠️ This API is not final and is actively being developed.**
 
+use crate::camera::CameraData;
 use crate::context::GraphicsContext;
 use crate::render::RenderPacket;
 
@@ -115,8 +116,19 @@ impl<'ctx> FrameHandle<'ctx> {
     pub fn submit_packet(&mut self, _data: RenderPacket) {
         debug_assert!(self.active, "Cannot submit to an inactive handle");
 
-        self._graphics_context
-            ._add_valid_render_packet(self.frame_index, _data);
+        if self.active {
+            self._graphics_context
+                ._add_valid_render_packet(self.frame_index, _data);
+        }
+    }
+
+    pub fn set_camera(&mut self, data: CameraData) {
+        debug_assert!(self.active, "Cannot submit to an inactive handle");
+        if self.active {
+            let index = self.frame_index;
+
+            self._graphics_context._set_frame_camera_data(index, data);
+        }
     }
 
     /// Explicitly ends the frame, releasing it for GPU processing.
@@ -161,8 +173,10 @@ impl<'ctx> FrameHandle<'ctx> {
     #[inline]
     pub fn end_frame(&mut self) {
         debug_assert!(self.active, "Frame already ended");
-        self.active = false;
-        self._graphics_context._release(self.frame_index);
+        if self.active {
+            self.active = false;
+            self._graphics_context._release(self.frame_index);
+        }
     }
 }
 
@@ -194,7 +208,7 @@ impl<'ctx> FrameHandle<'ctx> {
 /// ```
 ///
 /// [`end_frame()`]: FrameHandle::end_frame
-impl<'a> Drop for FrameHandle<'a> {
+impl Drop for FrameHandle<'_> {
     fn drop(&mut self) {
         if self.active {
             self.active = false;

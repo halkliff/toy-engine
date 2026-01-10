@@ -1,6 +1,8 @@
 {
   "cSpell.words": [
     "argb",
+    "bitflags",
+    "bytemuck",
     "euclid",
     "euler",
     "frobenius",
@@ -11,11 +13,14 @@
     "lerp",
     "premult",
     "RAII",
+    "repr",
     "slerp",
     "SRGB",
-    "toyengine"
+    "toyengine",
+    "Zeroable"
   ],
   "conventionalCommits.scopes": [
-    "core"
-  ]
+    "core",
+    "graphics",
+  ],
 }

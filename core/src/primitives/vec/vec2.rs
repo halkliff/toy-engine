@@ -434,7 +434,7 @@ impl Vec2 {
     #[inline]
     pub fn scale_slice_inplace(vectors: &mut [Self], scalar: f32) {
         for v in vectors.iter_mut() {
-            *v = *v * scalar;
+            *v *= scalar;
         }
     }
 

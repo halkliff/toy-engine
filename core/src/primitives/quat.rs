@@ -722,8 +722,8 @@ impl Mul for Quaternion {
     /// ```
     #[inline]
     fn mul(self, other: Self) -> Self {
-        let (x1, y1, z1, w1) = ((*self).x, (*self).y, (*self).z, (*self).w);
-        let (x2, y2, z2, w2) = ((*other).x, (*other).y, (*other).z, (*other).w);
+        let (x1, y1, z1, w1) = (self.x, self.y, self.z, self.w);
+        let (x2, y2, z2, w2) = (other.x, other.y, other.z, other.w);
 
         Quaternion::new(
             w1 * x2 + x1 * w2 + y1 * z2 - z1 * y2,
@@ -1049,14 +1049,14 @@ impl From<Quaternion> for [f32; 4] {
     /// ```
     #[inline]
     fn from(quat: Quaternion) -> Self {
-        [(*quat).x, (*quat).y, (*quat).z, (*quat).w]
+        [quat.x, quat.y, quat.z, quat.w]
     }
 }
 
 impl From<&Quaternion> for [f32; 4] {
     #[inline]
     fn from(quat: &Quaternion) -> Self {
-        [(*quat).x, (*quat).y, (*quat).z, (*quat).w]
+        [quat.x, quat.y, quat.z, quat.w]
     }
 }
 
@@ -1248,7 +1248,7 @@ mod tests {
         let q1 = Quaternion::identity();
         let q2 = Quaternion::from_axis_angle(Vec3::new(0.0, 0.0, 1.0), FRAC_PI_2);
         let angle = q1.angle_between(&q2);
-        assert!(angle >= 0.0 && angle <= PI);
+        assert!((0.0..=PI).contains(&angle));
         assert!((angle - FRAC_PI_2).abs() < EPSILON);
     }
 
@@ -1361,9 +1361,9 @@ mod tests {
         let q1 = Quaternion::new(1.0, 2.0, 3.0, 4.0);
         let q2 = Quaternion::new(5.0, 6.0, 7.0, 8.0);
 
-        let add1 = q1 + &q2;
-        let add2 = &q1 + q2;
-        let add3 = &q1 + &q2;
+        let add1 = q1 + q2;
+        let add2 = q1 + q2;
+        let add3 = q1 + q2;
         assert_eq!(add1, add2);
         assert_eq!(add2, add3);
     }
@@ -1378,7 +1378,7 @@ mod tests {
     #[test]
     fn test_deref() {
         let q = Quaternion::identity();
-        let v: &Vec4 = &*q;
+        let v: &Vec4 = &q;
         assert_eq!(*v, Vec4::new(0.0, 0.0, 0.0, 1.0));
     }
 
